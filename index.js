@@ -7,7 +7,8 @@ var rethinkdb = require('rethinkdbdash');
 var cache = require('memory-cache');
 
 module.exports = function (session) {
-  var Store = session.Store;
+  var Store = session.Store,
+      intervalid = null;
 
   function RethinkStore(options) {
     options = options || {};
@@ -21,7 +22,7 @@ module.exports = function (session) {
     this.sessionTimeout = options.sessionTimeout || 86400000; // 1 day
     this.table = options.table || 'session';
     this.debug = options.debug || false;
-    setInterval( function() {
+    intervalid = setInterval( function() {
       try {
         r.table(this.table).filter( r.row('expires').lt(r.now().toEpochTime().mul(1000)) ).delete().run(function(err, user) {
           return null;
@@ -92,5 +93,28 @@ module.exports = function (session) {
     });
   };
 
+  // Destroy Session All
+  RethinkStore.prototype.destroyall = function (fn, keyarr) {
+    var that = this,
+        keys = keyarr || cache.keys();
+
+    if (this.debug){ console.log( 'SESSION: (destroyall)'); }
+    
+    clearInterval(intervalid);
+    interval = null;
+    
+    if (keys.length) {
+      that.destroy(keys[0], function (err) {
+        if (err) return fn(err);
+
+        that.destroyall(fn, keyarr.slice(1));
+      });
+    } else {
+      r.getPool().drain();
+      r.getPoolMaster().drain();
+      fn(null);
+    }
+  };
+  
   return RethinkStore;
 };
