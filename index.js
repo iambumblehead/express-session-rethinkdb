@@ -106,7 +106,7 @@ module.exports = function (session) {
       that.destroy(keys[0], function (err) {
         if (err) return fn(err);
 
-        that.destroyall(fn, keyarr.slice(1));
+        that.destroyall(fn, keys.slice(1));
       });
     } else {
       r.getPool().drain();
