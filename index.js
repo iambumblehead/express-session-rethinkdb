@@ -98,10 +98,9 @@ module.exports = function (session) {
     var that = this,
         keys = keyarr || cache.keys();
 
-    if (this.debug){ console.log( 'SESSION: (destroyall)'); }
+    if (that.debug){ console.log( 'SESSION: (destroyall)'); }
     
     clearInterval(intervalid);
-    interval = null;
     
     if (keys.length) {
       that.destroy(keys[0], function (err) {
