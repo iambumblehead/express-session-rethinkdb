@@ -106,6 +106,7 @@ module.exports = function (session) {
       that.destroy(keys[0], function (err) {
         if (err) return fn(err);
 
+        cache.put(keys[0], '', 1); // force expire
         that.destroyall(fn, keys.slice(1));
       });
     } else {
